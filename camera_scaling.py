@@ -5,7 +5,7 @@ import keyboard
 import time
 
 # Camera Initialization
-vid = cv2.VideoCapture(1)
+vid = cv2.VideoCapture(0)
 ret = False
 while not ret:
     ret, f = vid.read()
