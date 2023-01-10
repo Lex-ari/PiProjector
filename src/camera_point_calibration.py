@@ -4,6 +4,7 @@ import numpy as np
 import keyboard
 import time
 import camera
+import os
 
 # Camera Initialization
 vid = camera.Camera()
@@ -15,7 +16,8 @@ blackDisplay = np.zeros((1080, 1920, 3), np.uint8)
 cv2.imshow("Projector", blackDisplay)
 
 #Begin Calibration
-calibrationTemplate = cv2.imread(r"C:\Users\amari\Desktop\PiProjector\Template-01.png")
+TEMPLATE_PATH = r"template_pictures\\"
+calibrationTemplate = cv2.imread(TEMPLATE_PATH + r"Template-01.png")
 #calibrationTemplate = cv2.resize(calibrationTemplate, (960, 540))
 w = calibrationTemplate.shape[1]
 h = calibrationTemplate.shape[0]
@@ -57,7 +59,7 @@ while True:
     #template matching https://docs.opencv.org/4.x/d4/dc6/tutorial_py_template_matching.html
     # use blended_mask as recent
     #multi scale template matching https://pyimagesearch.com/2015/01/26/multi-scale-template-matching-using-python-opencv/
-    template_to_match = cv2.imread(r"C:\Users\amari\Desktop\PiProjector\CornerPiece.png")
+    template_to_match = cv2.imread(TEMPLATE_PATH + r"CornerPiece.png")
     template_to_match = cv2.cvtColor(template_to_match, cv2.COLOR_BGR2GRAY)
     ret, template_to_match = cv2.threshold(template_to_match, 127, 255, cv2.THRESH_BINARY)
     template_width, template_height = template_to_match.shape[::-1]
