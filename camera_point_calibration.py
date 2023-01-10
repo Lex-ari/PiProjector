@@ -31,12 +31,12 @@ while True:
     for i in range (number_comparison_frames):
         cv2.imshow("Projector", blackDisplay)
         cv2.waitKey(1)
+        time.sleep(0.3)
         pictureNoTemplate = vid.getFrame()
-        time.sleep(0.2)
         cv2.imshow("Projector", calibrationTemplate)
         cv2.waitKey(1)
+        time.sleep(0.3)
         pictureWithTemplate = vid.getFrame()
-        time.sleep(0.2)
         
         diff = cv2.absdiff(pictureNoTemplate, pictureWithTemplate)
         mask = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
@@ -64,7 +64,7 @@ while True:
     #template_to_match = cv2.Canny(template_to_match, 250, 1000)
     #edge_mask = cv2.Canny(blended_mask, 250, 1000)
     edge_mask = blended_mask.copy()
-    return_edge_mask = edge_mask.copy()
+    return_edge_mask = pictureWithTemplate.copy()
     for corner in range(4):
         rotated_template_to_match = template_to_match.copy()
         text = "TL"
@@ -93,9 +93,9 @@ while True:
         if found is not None:
             top_left = found[1]
             bottom_right = (int(top_left[0] + template_width * found[2]), int(top_left[1] + template_height * found[2]))
-            cv2.rectangle(return_edge_mask, top_left, bottom_right, 255, 2)
-            cv2.putText(return_edge_mask, text, top_left, cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
-            cv2.putText(return_edge_mask, str(found[0])[0:4], bottom_right, cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
+            cv2.rectangle(return_edge_mask, top_left, bottom_right, (255, 255, 255), 2)
+            cv2.putText(return_edge_mask, text, top_left, cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+            cv2.putText(return_edge_mask, str(found[0])[0:4], bottom_right, cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
     return_edge_mask = cv2.resize(return_edge_mask, (640, 480))
     cv2.imshow("Prediction", return_edge_mask)
 

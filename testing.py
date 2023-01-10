@@ -15,23 +15,16 @@ cv2.imshow("Projector", calibrationTemplate)
 blackDisplay = np.zeros((1080, 1920, 3), np.uint8)
 
 #Begin Calibration
-
-
 while True:
-    pictureNoTemplate = vid.getFrame()
-    cv2.imshow("vid", pictureNoTemplate)
+    cv2.imshow("Projector", blackDisplay)
     cv2.waitKey(1)
-    '''
-    cv2.imshow("Projector", calibrationTemplate)
-    cv2.waitKey(1)
-    time.sleep(0.5)
+    time.sleep(0.3)
     pictureNoTemplate = vid.getFrame()
     cv2.imshow("noTemplate", pictureNoTemplate)
     cv2.waitKey(1)
-    time.sleep(0.5)
-    cv2.imshow("Projector", blackDisplay)
+    cv2.imshow("Projector", calibrationTemplate)
     cv2.waitKey(1)
+    time.sleep(0.3)
     pictureWithTemplate = vid.getFrame()
-    cv2.imshow("WithTemplate", pictureNoTemplate)
+    cv2.imshow("WithTemplate", pictureWithTemplate)
     cv2.waitKey(1)
-    '''
