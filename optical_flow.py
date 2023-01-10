@@ -1,6 +1,7 @@
 import cv2
 import time
 import numpy as np
+import camera
 
 # Camera Initialization
 vid = cv2.VideoCapture(1)

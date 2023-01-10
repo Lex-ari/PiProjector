@@ -3,21 +3,11 @@ import time
 import numpy as np
 import keyboard
 import time
+import camera
 
 # Camera Initialization
-vid = cv2.VideoCapture(1, cv2.CAP_DSHOW)
-WIDTH, HEIGHT = 1280, 720
-vid.set(cv2.CAP_PROP_FRAME_WIDTH, WIDTH)
-vid.set(cv2.CAP_PROP_FRAME_HEIGHT, HEIGHT)
-
-vid.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
-vid.set(cv2.CAP_PROP_FPS, 30)
-
-ret = False
-while not ret:
-    ret, f = vid.read()
-    if ret and np.sum(f.flatten()) == 0:
-        ret = False
+vid = camera.Camera()
+WIDTH, HEIGHT = vid.getResolution()
 
 cv2.namedWindow("Projector", cv2.WND_PROP_FULLSCREEN)
 cv2.setWindowProperty("Projector", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
@@ -33,7 +23,7 @@ while True:
     #https://stackoverflow.com/questions/27035672/cv-extract-differences-between-two-images
     #New strategy: Take 2 pictures, 1 with and 1 without template, then compare values
 
-    number_comparison_frames = 3
+    number_comparison_frames = 5
     #calibration_images = np.empty(number_comparison_frames, dtype=object) 
 
     blended_mask = np.zeros((HEIGHT, WIDTH, 1), np.uint8)
@@ -41,11 +31,11 @@ while True:
     for i in range (number_comparison_frames):
         cv2.imshow("Projector", blackDisplay)
         cv2.waitKey(1)
-        ret, pictureNoTemplate = vid.read()
+        pictureNoTemplate = vid.getFrame()
         time.sleep(0.2)
         cv2.imshow("Projector", calibrationTemplate)
         cv2.waitKey(1)
-        ret, pictureWithTemplate = vid.read()
+        pictureWithTemplate = vid.getFrame()
         time.sleep(0.2)
         
         diff = cv2.absdiff(pictureNoTemplate, pictureWithTemplate)
@@ -105,7 +95,7 @@ while True:
             bottom_right = (int(top_left[0] + template_width * found[2]), int(top_left[1] + template_height * found[2]))
             cv2.rectangle(return_edge_mask, top_left, bottom_right, 255, 2)
             cv2.putText(return_edge_mask, text, top_left, cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
-            cv2.putText(return_edge_mask, str(found[2]), bottom_right, cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
+            cv2.putText(return_edge_mask, str(found[0])[0:4], bottom_right, cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
     return_edge_mask = cv2.resize(return_edge_mask, (640, 480))
     cv2.imshow("Prediction", return_edge_mask)
 
