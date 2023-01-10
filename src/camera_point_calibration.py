@@ -7,7 +7,7 @@ import camera
 import os
 
 # Camera Initialization
-vid = camera.Camera()
+vid = camera.C920()
 WIDTH, HEIGHT = vid.getResolution()
 
 cv2.namedWindow("Projector", cv2.WND_PROP_FULLSCREEN)
