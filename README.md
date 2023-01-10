@@ -15,6 +15,7 @@ Current Equipment:
 
 **Features:**
 - [CURRENT PROGRESS] Automatic Camera / Projection Calibration
+ - Takes multiple images, uses image subtraction, and template matching to solve for center, skewness, and area of projection.
 - [CURRENT PROGRESS] Projection / Camera CAD mount
 - [PLANNED] Optical Flow tracking of pie
 - [PLANNED] Circle fraction projections
