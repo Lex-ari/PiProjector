@@ -4,69 +4,53 @@ import numpy as np
 import keyboard
 import time
 import camera
+import display
 import os
 
-# Camera Initialization
-vid = camera.C920()
-WIDTH, HEIGHT = vid.getResolution()
-
-cv2.namedWindow("Projector", cv2.WND_PROP_FULLSCREEN)
-cv2.setWindowProperty("Projector", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
-blackDisplay = np.zeros((1080, 1920, 3), np.uint8)
-cv2.imshow("Projector", blackDisplay)
-
-#Begin Calibration
 TEMPLATE_PATH = r"template_pictures\\"
-calibrationTemplate = cv2.imread(TEMPLATE_PATH + r"Template-01.png")
-#calibrationTemplate = cv2.resize(calibrationTemplate, (960, 540))
-w = calibrationTemplate.shape[1]
-h = calibrationTemplate.shape[0]
-while True:
+
+def doCalibration(camera, display):
+    # Do Camer
+    blended_mask = getSubtractedFrames(camera, display, 3, 10)
+    display.updateCameraSubtraction(blended_mask)
+
+    foundArea = getTemplateMatching(camera, blended_mask)
+    display.updateCameraMask(foundArea)
+
+
+def getSubtractedFrames(camera, display, number_comparison_frames, threshold):
     #https://stackoverflow.com/questions/27035672/cv-extract-differences-between-two-images
     #New strategy: Take 2 pictures, 1 with and 1 without template, then compare values
-
-    number_comparison_frames = 5
-    #calibration_images = np.empty(number_comparison_frames, dtype=object) 
-
-    blended_mask = np.zeros((HEIGHT, WIDTH, 1), np.uint8)
+    CAMERA_WIDTH, CAMERA_HEIGHT = camera.getResolution()
+    blended_mask = np.zeros((CAMERA_HEIGHT, CAMERA_WIDTH, 1), np.uint8)
     blended_mask[:] = 255
     for i in range (number_comparison_frames):
-        cv2.imshow("Projector", blackDisplay)
-        cv2.waitKey(1)
+        display.changeBackground("Blank")
         time.sleep(0.3)
-        pictureNoTemplate = vid.getFrame()
-        cv2.imshow("Projector", calibrationTemplate)
-        cv2.waitKey(1)
+        pictureNoTemplate = camera.getFrame()
+        display.changeBackground("Template-01")
         time.sleep(0.3)
-        pictureWithTemplate = vid.getFrame()
+        pictureWithTemplate = camera.getFrame()
         
         diff = cv2.absdiff(pictureNoTemplate, pictureWithTemplate)
         mask = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
-        threshold = 10  #if abs diff is greater than 10 for each value, then pixel becomes part of the mask.
-        imagemask = mask > threshold
+        imagemask = mask > threshold #if abs diff is greater than 10 for each value, then pixel becomes part of the mask.
         
         new_blended_mask = np.zeros_like(blended_mask, np.uint8)
         new_blended_mask[imagemask] = blended_mask[imagemask]
         blended_mask = new_blended_mask
+    return blended_mask
 
-        '''
-        output = np.zeros_like(pictureWithTemplate, np.uint8)
-        output[imagemask] = pictureWithTemplate[imagemask]
-        cv2.imshow("Difference", output)
-        '''
-    #cv2.imshow("mask", blended_mask)
-    
+def getTemplateMatching(camera, blended_mask):
     #template matching https://docs.opencv.org/4.x/d4/dc6/tutorial_py_template_matching.html
     # use blended_mask as recent
     #multi scale template matching https://pyimagesearch.com/2015/01/26/multi-scale-template-matching-using-python-opencv/
+    CAMERA_WIDTH, CAMERA_HEIGHT = camera.getResolution()
     template_to_match = cv2.imread(TEMPLATE_PATH + r"CornerPiece.png")
     template_to_match = cv2.cvtColor(template_to_match, cv2.COLOR_BGR2GRAY)
     ret, template_to_match = cv2.threshold(template_to_match, 127, 255, cv2.THRESH_BINARY)
     template_width, template_height = template_to_match.shape[::-1]
-    #template_to_match = cv2.Canny(template_to_match, 250, 1000)
-    #edge_mask = cv2.Canny(blended_mask, 250, 1000)
-    edge_mask = blended_mask.copy()
-    return_edge_mask = pictureWithTemplate.copy()
+    return_edge_mask = np.zeros((CAMERA_HEIGHT, CAMERA_WIDTH, 3), np.uint8)
     for corner in range(4):
         rotated_template_to_match = template_to_match.copy()
         text = "TL"
@@ -88,7 +72,7 @@ while True:
             scaled_width = template_width * scale
             scaled_height = template_height * scale
             resized_template = cv2.resize(rotated_template_to_match, (int(scaled_width), int(scaled_height)))
-            res = cv2.matchTemplate(edge_mask, resized_template, cv2.TM_CCORR_NORMED)
+            res = cv2.matchTemplate(blended_mask, resized_template, cv2.TM_CCORR_NORMED)
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
             if found is None or max_val > found[0]:
                 found = (max_val, max_loc, scale)
@@ -98,8 +82,9 @@ while True:
             cv2.rectangle(return_edge_mask, top_left, bottom_right, (255, 255, 255), 2)
             cv2.putText(return_edge_mask, text, top_left, cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
             cv2.putText(return_edge_mask, str(found[0])[0:4], bottom_right, cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
-    return_edge_mask = cv2.resize(return_edge_mask, (640, 480))
-    cv2.imshow("Prediction", return_edge_mask)
+    return return_edge_mask
+
+
 
     #output_gray = cv2.cvtColor(blended_mask, cv2.COLOR_BGR2GRAY)
     # Finding Center of mask https://learnopencv.com/find-center-of-blob-centroid-using-opencv-cpp-python/
@@ -116,8 +101,3 @@ while True:
     pictureWithTemplate = cv2.resize(pictureWithTemplate, (960, 540))
     cv2.imshow("Prediction", pictureWithTemplate)
     '''
-    if cv2.waitKey(1) == ord('q'):
-            break
-
-
-cv2.destroyAllWindows()

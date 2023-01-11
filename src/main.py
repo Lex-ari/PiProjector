@@ -5,13 +5,12 @@ import keyboard
 import time
 import camera
 import display
+import calibration
 import os
 
 camera = camera.C920()
 projector = display.Display(camera)
-projector.changeBackground("Template-01.png")
 while True:
-    projector.changeBackground("Template-01.png")
+    calibration.doCalibration(camera, projector)
     time.sleep(0.1)
-    projector.changeBackground("Blank")
-    time.sleep(0.1)
+    
