@@ -9,6 +9,9 @@ import os
 
 TEMPLATE_PATH = r"template_pictures\\"
 
+#
+# Method to be called outside to handle calibration methods, such as image subtraction and template matching.
+#
 def doCalibration(camera, display):
     # Do Camer
     blended_mask = getSubtractedFrames(camera, display, 3, 10)
@@ -17,7 +20,11 @@ def doCalibration(camera, display):
     foundArea = getTemplateMatching(camera, blended_mask)
     display.updateCameraMask(foundArea)
 
-
+#
+# Takes a picture without and with the template, subtracts anything that is similar (using a threshold) so that differences show.
+# Repeats number_comparison_frames times. Takes differences of each group for one final blended_mask
+# Returns a matrix with shape CAMERA_HEIGHT, CAMERA_WIDTH, 1.
+#
 def getSubtractedFrames(camera, display, number_comparison_frames, threshold):
     #https://stackoverflow.com/questions/27035672/cv-extract-differences-between-two-images
     #New strategy: Take 2 pictures, 1 with and 1 without template, then compare values
@@ -41,6 +48,11 @@ def getSubtractedFrames(camera, display, number_comparison_frames, threshold):
         blended_mask = new_blended_mask
     return blended_mask
 
+#
+# Uses scaling template matching 4 times to get corners of blended_mask.
+# Camera and Blended_mask should have same resolution.
+# Access to CornerPiece.png required.
+#
 def getTemplateMatching(camera, blended_mask):
     #template matching https://docs.opencv.org/4.x/d4/dc6/tutorial_py_template_matching.html
     # use blended_mask as recent

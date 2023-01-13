@@ -28,7 +28,9 @@ class Display(Thread):
         self.thread.daemon = True
         self.thread.start()
         
-    
+    #
+    # Blends all layers of image to show as one image under "Projector" window.
+    #
     def update(self):
         while True:
             # Compress layers and imshow
@@ -57,6 +59,9 @@ class Display(Thread):
             cv2.waitKey(5)
             time.sleep(0.1)
         
+    #
+    # Changes fullscreen background to blank or different types of template by name.
+    #
     def changeBackground(self, templateName):
         if templateName == "Template-01": self.layers[0] = cv2.imread(self.TEMPLATE_PATH + "Template-01.png")
     
@@ -65,6 +70,9 @@ class Display(Thread):
     def getResolution(self):
         return self.WIDTH, self.HEIGHT
 
+    #
+    # Updates mask that is used in lower-left mini camera view.
+    #
     def updateCameraMask(self, mask):
         self.layers[2] = mask
 
