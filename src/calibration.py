@@ -71,7 +71,6 @@ def getTemplateMatching(camera, blended_mask):
 
     return_edge_mask = np.zeros((CAMERA_HEIGHT, CAMERA_WIDTH, 3), np.uint8)
     coordinate_edges = [(0, 0), (0, 0), (0, 0), (0, 0)]
-    scale
 
 
     for corner in range(4):
