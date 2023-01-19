@@ -23,3 +23,5 @@ Current Equipment:
 - [PLANNED] Magnification Lens for Projector for close-up projection
 
 ![image](https://user-images.githubusercontent.com/65744075/211457048-6a421419-286a-4573-a0d7-261faccb217f.png)
+
+![image](https://user-images.githubusercontent.com/65744075/213399290-46f1dbc3-246e-41e5-b6a8-7a3377ac2892.png)
