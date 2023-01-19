@@ -21,7 +21,11 @@ class Display(Thread):
         self.CAMERA_X_OFFSET, self.CAMERA_Y_OFFSET = 1344, 690
         self.CAMERA_WIDTH, self.CAMERA_HEIGHT = 426, 240
 
-        # Layers: Background, CameraView, TrackingMask
+        # Layers: 
+        # 0 = Background
+        # 1 = CameraView
+        # 2 = Template Matching Mask
+        # 3 = Subtraction Mask
         self.layers = [self.blank, self.camera.getFrame(), None, None]
         # Threading
         self.thread = Thread(target = self.update, args=())
@@ -34,21 +38,21 @@ class Display(Thread):
     def update(self):
         while True:
             # Compress layers and imshow
-            resultDisplay = self.layers[0]
-            self.layers[1] = self.camera.getFrame()
+            resultDisplay = self.layers[0]  
+            self.layers[1] = self.camera.getFrame() # Updating Live Feed (Layer 1)
             
+            # Combining Mask(2) and Live Feed(1)
             if self.layers[2] is not None: 
-                self.layers[1] = cv2.add(self.layers[1], self.layers[2])
+                self.layers[1] = cv2.add(self.layers[1], self.layers[2]) 
 
-            '''
+            # Adding Subtraction Mask (3)
             if self.layers[3] is not None:
-                white = np.zeros((720, 1280, 3), np.uint8)
-                white[self.layers[3]] = (255, 255, 255)
-                cv2.imshow("white", white)
-                subtractionMask = cv2.resize(white, (self.CAMERA_WIDTH, self.CAMERA_HEIGHT))
-                resultDisplay[self.CAMERA_Y_OFFSET : self.CAMERA_Y_OFFSET + self.CAMERA_HEIGHT, 576 : 576 + self.CAMERA_WIDTH] = subtractionMask
-                cv2.imshow("subtraction", subtractionMask)
-            '''
+                subtractionMask = cv2.resize(self.layers[3], (self.CAMERA_WIDTH, self.CAMERA_HEIGHT))
+                cv2.rectangle(subtractionMask, (0, 0), (self.CAMERA_WIDTH, self.CAMERA_HEIGHT), (255, 255, 255), 2)
+                merged_subtraction_mask = cv2.merge((subtractionMask, subtractionMask, subtractionMask))
+                resultDisplay[self.CAMERA_Y_OFFSET : self.CAMERA_Y_OFFSET + self.CAMERA_HEIGHT, 150 : 150 + self.CAMERA_WIDTH] = merged_subtraction_mask
+                #cv2.imshow("subtraction", subtractionMask)
+
             
             cameraView = cv2.resize(self.layers[1], (self.CAMERA_WIDTH, self.CAMERA_HEIGHT))
             resultDisplay[self.CAMERA_Y_OFFSET : self.CAMERA_Y_OFFSET + self.CAMERA_HEIGHT, self.CAMERA_X_OFFSET : self.CAMERA_X_OFFSET + self.CAMERA_WIDTH] = cameraView
@@ -71,10 +75,13 @@ class Display(Thread):
         return self.WIDTH, self.HEIGHT
 
     #
-    # Updates mask that is used in lower-left mini camera view.
+    # Updates mask that is used in lower-right mini camera view and tracking
     #
-    def updateCameraMask(self, mask):
+    def updateCameraMask(self, mask, center_coord):
+        y_intersect, x_intersect = center_coord
+        mask_with_prediction = cv2.circle(mask, (x_intersect, y_intersect), 5, (255, 0, 0), 2)
         self.layers[2] = mask
 
     def updateCameraSubtraction(self, mask):
         self.layers[3] = mask
+    
